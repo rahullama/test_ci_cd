@@ -5,15 +5,14 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      # Reference the variable group "test"
-      variable_group: test  # This links the environment variables from the "test" variable group
+      # Define the environment variables directly, if they are not in the variable group
+      KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
+      KEY_PASSWORD: $KEY_PASSWORD
+      KEY_ALIAS: $KEY_ALIAS
+      PACKAGE_NAME: "com.simpleviralgames.timepass"
 
       android_signing:
-        - keystore_reference  # Your keystore environment variable
-
-    vars:
-      PACKAGE_NAME: "com.simpleviralgames.timepass"
-      # Additional variables if needed
+        - keystore_reference  # This will point to the uploaded keystore in Codemagic
 
     scripts:
       - name: Set Android SDK location
