@@ -9,6 +9,10 @@ workflows:
         - keystore_reference
       vars:
         PACKAGE_NAME: "com.simpleviralgames.timepass"
+        # Add keystore passwords and alias securely
+        KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD  # Set in Codemagic environment
+        KEY_PASSWORD: $KEY_PASSWORD  # Set in Codemagic environment
+        KEY_ALIAS: $KEY_ALIAS  # Set in Codemagic environment
 
     scripts:
       - name: Set Android SDK location
