@@ -5,12 +5,6 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      # Define the environment variables directly, if they are not in the variable group
-      KEYSTORE_PASSWORD: $KEYSTORE_PASSWORD
-      KEY_PASSWORD: $KEY_PASSWORD
-      KEY_ALIAS: $KEY_ALIAS
-      PACKAGE_NAME: "com.simpleviralgames.timepass"
-
       android_signing:
         - keystore_reference  # This will point to the uploaded keystore in Codemagic
 
