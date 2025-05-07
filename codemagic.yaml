@@ -4,9 +4,9 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
 
-    environment:
-      android_signing:
-        - keystore_reference  # This will point to the uploaded keystore in Codemagic
+#    environment:
+#      android_signing:
+#        - keystore_reference  # This will point to the uploaded keystore in Codemagic
 
     scripts:
       - name: Set Android SDK location
