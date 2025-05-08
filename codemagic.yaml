@@ -35,8 +35,8 @@ workflows:
 #        submit_as_draft: false
 
       slack:
-        webhook_url: $SLACK_WEBHOOK_URL
-        notify_on_build_start: false
+        channel: '#codemagic'                 # ← required
+        notify_on_build_start: false     # optional
         notify:
           success: true
           failure: true
