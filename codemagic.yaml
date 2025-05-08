@@ -9,4 +9,4 @@ workflows:
         script: |
           cd $CM_BUILD_DIR
           echo "📁 Listing project structure:"
-          find . -type f -name "build.gradle" || echo "No build.gradle files found."
+          find . -type f -name "build.gradle.kts" || echo "No build.gradle files found."
