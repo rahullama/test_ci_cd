@@ -1,3 +1,45 @@
+#workflows:
+#  build-and-upload-aab:
+#    name: Build & Upload AAB
+#    max_build_duration: 60
+#    instance_type: mac_mini_m2
+#
+#    environment:
+#      android_signing:
+#        - keystore_reference  # Replace with your keystore ID
+##      groups:
+##        - google_play            # Enables Play Store access
+##        - slack_credentials      # For Slack Webhook
+#
+#    scripts:
+#      - name: Set Android SDK location
+#        script: |
+#          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+#
+#      - name: Debug signing environment
+#        script: |
+#          echo "Keystore Path: $CM_KEYSTORE_PATH"
+#          echo "Alias: $CM_KEY_ALIAS"
+#
+#      - name: Build signed release AAB
+#        script: |
+#          ./gradlew bundleRelease
+#
+#    artifacts:
+#      - app/build/outputs/**/*.aab
+#
+#    publishing:
+##      google_play:
+##        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+##        track: internal
+##        submit_as_draft: false
+#
+#      slack:
+#        channel: '#codemagic'                 # ← required
+#        notify_on_build_start: false     # optional
+#        notify:
+#          success: true
+#          failure: true
 workflows:
   build-and-upload-aab:
     name: Build & Upload AAB
@@ -7,9 +49,6 @@ workflows:
     environment:
       android_signing:
         - keystore_reference  # Replace with your keystore ID
-#      groups:
-#        - google_play            # Enables Play Store access
-#        - slack_credentials      # For Slack Webhook
 
     scripts:
       - name: Set Android SDK location
@@ -25,18 +64,48 @@ workflows:
         script: |
           ./gradlew bundleRelease
 
+      - name: Send Custom Slack Message (Only on Success)
+        when:
+          success: true  # Only run on successful builds
+        script: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{
+            "blocks": [
+              {
+                "type": "section",
+                "fields": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Build Status:* :white_check_mark: Success"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*App:* test_ci_cd"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Version:* 1.0"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Build URL:* <https://codemagic.io/build/12345678|View Build>"
+                  },
+                  {
+                    "type": "mrkdwn",
+                    "text": "*AAB Download Link:* <https://link-to-your-aab-file|Download>"
+                  }
+                ]
+              }
+            ]
+          }' $SLACK_WEBHOOK_URL
+
     artifacts:
       - app/build/outputs/**/*.aab
 
     publishing:
-#      google_play:
-#        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-#        track: internal
-#        submit_as_draft: false
-
       slack:
-        channel: '#codemagic'                 # ← required
-        notify_on_build_start: false     # optional
+        channel: '#codemagic'  # Replace with your Slack channel
+        notify_on_build_start: false
         notify:
-          success: true
-          failure: true
+          success: true  # Only send notifications on success
+          failure: false # Do not notify on failure
