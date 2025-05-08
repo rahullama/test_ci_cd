@@ -73,9 +73,23 @@ workflows:
             CHANGELOG_CONTENT="No changelog found. Please add the latest changes to CHANGELOG.md."
           fi
           
-          # Fetch version and build information
-          VERSION_CODE=$(grep versionCode app/build.gradle | awk '{print $2}' | tr -d ';')
-          VERSION_NAME=$(grep versionName app/build.gradle | awk '{print $2}' | tr -d '"')
+          # Fetch version and build information (with debugging)
+          VERSION_CODE=$(grep -m 1 "versionCode" app/build.gradle | awk '{print $2}' | tr -d ';')
+          VERSION_NAME=$(grep -m 1 "versionName" app/build.gradle | awk '{print $2}' | tr -d '"')
+          
+          echo "Version Code: $VERSION_CODE"
+          echo "Version Name: $VERSION_NAME"
+          
+          # Check if values are found, if not, print an error
+          if [ -z "$VERSION_CODE" ]; then
+            echo "Error: versionCode not found!"
+            exit 1
+          fi
+          
+          if [ -z "$VERSION_NAME" ]; then
+            echo "Error: versionName not found!"
+            exit 1
+          fi
           
           # Fetch the .aab file path
           AAB_FILE_PATH="app/build/outputs/bundle/release/app-release.aab"
@@ -89,7 +103,9 @@ workflows:
           Download the AAB here: $DOWNLOAD_LINK
           
           Changelog:
-          $CHANGELOG_CONTENT"
+          \`\`\`
+          $CHANGELOG_CONTENT
+          \`\`\`"
           
           # If SLACK_WEBHOOK_URL is not set, exit the script
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
