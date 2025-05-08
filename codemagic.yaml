@@ -104,8 +104,8 @@ workflows:
     environment:
       android_signing:
         - keystore_reference  # Replace with your keystore ID
-      vars:
-        SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL  # This is where the environment variable will be accessed
+#      vars:
+#        SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL  # This is where the environment variable will be accessed
 
     scripts:
       - name: Set Android SDK location
