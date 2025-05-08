@@ -31,12 +31,12 @@ workflows:
           fi
           
           # Clean up the changelog content: Remove Markdown headers (lines starting with #)
-          CLEANED_CHANGELOG=$(echo "$CHANGELOG_CONTENT" | sed 's/^#\+ //g' | sed 's/```//g')
+          CLEANED_CHANGELOG=$(echo "$CHANGELOG_CONTENT" | sed '/^#/d' | sed 's/```//g')
           
-          # Extract versionCode and versionName
+          # Extract versionCode and versionName from the app/build.gradle.kts file
           if [ -f "app/build.gradle.kts" ]; then
-            VERSION_CODE=$(grep -m 1 "versionCode" app/build.gradle.kts | awk '{print $2}' | tr -d ';')
-            VERSION_NAME=$(grep -m 1 "versionName" app/build.gradle.kts | awk '{print $2}' | tr -d '"')
+            VERSION_CODE=$(grep -m 1 "versionCode" app/build.gradle.kts | cut -d '=' -f 2 | tr -d ' ' | tr -d ';')
+            VERSION_NAME=$(grep -m 1 "versionName" app/build.gradle.kts | cut -d '=' -f 2 | tr -d ' ' | tr -d '"')
           fi
 
           # Fallback if values weren't found
