@@ -64,38 +64,26 @@ workflows:
         script: |
           ./gradlew bundleRelease
 
-      - name: Send Custom Slack Message (Only on Success)
+      - name: Send Basic Slack Message (Only on Success)
         script: |
+          echo "Sending Slack message..."
+          
+          # Ensure SLACK_WEBHOOK_URL is set
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "Error: SLACK_WEBHOOK_URL is not set!"
+            exit 1
+          fi
+
+          # Send Slack message via curl
           curl -X POST -H 'Content-type: application/json' \
-          --data '{
-            "blocks": [
-              {
-                "type": "section",
-                "fields": [
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Build Status:* :white_check_mark: Success"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*App:* test_ci_cd"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Version:* 1.0"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*Build URL:* <https://codemagic.io/build/12345678|View Build>"
-                  },
-                  {
-                    "type": "mrkdwn",
-                    "text": "*AAB Download Link:* <https://link-to-your-aab-file|Download>"
-                  }
-                ]
-              }
-            ]
-          }' $SLACK_WEBHOOK_URL
+          --data '{"text": "Build Success! :white_check_mark:"}' \
+          $SLACK_WEBHOOK_URL
+
+          if [ $? -ne 0 ]; then
+            echo "Error: Slack notification failed!"
+            exit 2
+          fi
+          echo "Slack message sent successfully!"
 
     artifacts:
       - app/build/outputs/**/*.aab
