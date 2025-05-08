@@ -6,7 +6,7 @@ workflows:
 
     environment:
       android_signing:
-        - my-uploaded-keystore  # Make sure this matches the keystore ID in Codemagic
+        - keystore_reference  # Make sure this matches the keystore ID in Codemagic
 
     scripts:
       - name: Set Android SDK location
