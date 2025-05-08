@@ -64,36 +64,44 @@ workflows:
         script: |
           ./gradlew bundleRelease
 
-      - name: Send Slack Message (On Success)
+      - name: Read Changelog from `CHANGELOG.md` and Send to Slack
         script: |
-          echo "Sending Slack message..."
-
-          # Fetch the version info from the build.gradle
+          # Read the contents of the CHANGELOG.md file
+          if [ -f "CHANGELOG.md" ]; then
+            CHANGELOG_CONTENT=$(cat CHANGELOG.md)
+          else
+            CHANGELOG_CONTENT="No changelog found. Please add the latest changes to CHANGELOG.md."
+          fi
+          
+          # Fetch version and build information
           VERSION_CODE=$(grep versionCode app/build.gradle | awk '{print $2}' | tr -d ';')
           VERSION_NAME=$(grep versionName app/build.gradle | awk '{print $2}' | tr -d '"')
           
-          # Fetch the .aab file path (replace with your actual path if different)
+          # Fetch the .aab file path
           AAB_FILE_PATH="app/build/outputs/bundle/release/app-release.aab"
           
-          # Construct the download link (example, replace with your actual hosting link)
+          # Construct the download link (replace with your actual hosting link)
           DOWNLOAD_LINK="https://your-download-link.com/$AAB_FILE_PATH"
-
+          
+          # Prepare the Slack message
+          SLACK_MESSAGE="Build Success! :white_check_mark:
+          Version: $VERSION_NAME (Code: $VERSION_CODE)
+          Download the AAB here: $DOWNLOAD_LINK
+          
+          Changelog:
+          $CHANGELOG_CONTENT"
+          
           # If SLACK_WEBHOOK_URL is not set, exit the script
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
             echo "Error: SLACK_WEBHOOK_URL is not set!"
             exit 1
           fi
-
-          # Prepare the Slack message with the version and download link
-          SLACK_MESSAGE="Build Success! :white_check_mark:
-          Version: $VERSION_NAME (Code: $VERSION_CODE)
-          Download the AAB here: $DOWNLOAD_LINK"
-
+          
           # Send the message to Slack
           curl -X POST -H 'Content-type: application/json' \
           --data '{"text": "'"$SLACK_MESSAGE"'"}' \
           $SLACK_WEBHOOK_URL
-
+          
           if [ $? -ne 0 ]; then
             echo "Error: Slack notification failed!"
             exit 2
