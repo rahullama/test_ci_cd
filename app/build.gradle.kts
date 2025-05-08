@@ -20,10 +20,17 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("my-release-key.jks")
-            storePassword = "rahullama"
-            keyAlias = "my-key-alias"
-            keyPassword = "rahullama"
+            val keystorePath = System.getenv("CM_KEYSTORE_PATH")
+            val keystorePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+            val keyAlias = System.getenv("CM_KEY_ALIAS")
+            val keyPassword = System.getenv("CM_KEY_PASSWORD")
+
+            if (keystorePath != null) {
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+            }
         }
     }
 
@@ -34,7 +41,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            //signingConfig = signingConfigs.getByName("release") // ✅ Add this line
+            signingConfig = signingConfigs.getByName("release") // ✅ Add this line
         }
     }
     compileOptions {

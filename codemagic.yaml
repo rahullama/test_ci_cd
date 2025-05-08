@@ -6,12 +6,17 @@ workflows:
 
     environment:
       android_signing:
-        - keystore_reference  # This will point to the uploaded keystore in Codemagic
+        - my-uploaded-keystore  # Make sure this matches the keystore ID in Codemagic
 
     scripts:
       - name: Set Android SDK location
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+
+      - name: Debug signing environment
+        script: |
+          echo "Keystore Path: $CM_KEYSTORE_PATH"
+          echo "Alias: $CM_KEY_ALIAS"
 
       - name: Build signed release APK
         script: |
@@ -19,4 +24,3 @@ workflows:
 
     artifacts:
       - app/build/outputs/**/*.apk
-
