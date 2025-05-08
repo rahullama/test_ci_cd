@@ -145,8 +145,8 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      vars:
-        SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL  # Make sure this is set in Codemagic UI
+      groups:
+        - test
 
     scripts:
       - name: Print Slack Webhook URL
