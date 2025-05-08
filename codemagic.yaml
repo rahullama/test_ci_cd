@@ -1,91 +1,31 @@
 workflows:
-  build-and-upload-aab:
-    name: Build & Upload AAB
-    max_build_duration: 60
+  print-version-info:
+    name: Print Android Version Info
+    max_build_duration: 10
     instance_type: mac_mini_m2
 
-    environment:
-      android_signing:
-        - keystore_reference  # Replace with your keystore ID
-      groups:
-        - test
-
     scripts:
-      - name: Set Android SDK location
-        script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-
-      - name: Build signed release AAB
-        script: |
-          ./gradlew bundleRelease
-
-      - name: Read Changelog from `CHANGELOG.md` and Send to Slack
+      - name: Extract and print version info
         script: |
           cd $CM_BUILD_DIR
-          
-          # Read the contents of the CHANGELOG.md file
-          if [ -f "CHANGELOG.md" ]; then
-            CHANGELOG_CONTENT=$(cat CHANGELOG.md)
-          else
-            CHANGELOG_CONTENT="No changelog found. Please add the latest changes to CHANGELOG.md."
-          fi
-          
-          # Extract versionCode and versionName
+
           if [ -f "app/build.gradle" ]; then
             VERSION_CODE=$(grep -m 1 "versionCode" app/build.gradle | awk '{print $2}' | tr -d ';')
             VERSION_NAME=$(grep -m 1 "versionName" app/build.gradle | awk '{print $2}' | tr -d '"')
+          else
+            echo "Error: app/build.gradle not found!"
+            exit 1
           fi
 
-          # Fallback if values weren't found
-          if [ -z "$VERSION_CODE" ]; then VERSION_CODE="N/A"; fi
-          if [ -z "$VERSION_NAME" ]; then VERSION_NAME="N/A"; fi
-          
-          echo "Version Code: $VERSION_CODE"
-          echo "Version Name: $VERSION_NAME"
-          
-          # Check if values are found, if not, print an error
           if [ -z "$VERSION_CODE" ]; then
             echo "Error: versionCode not found!"
             exit 1
           fi
-          
+
           if [ -z "$VERSION_NAME" ]; then
             echo "Error: versionName not found!"
             exit 1
           fi
-          
-          # Fetch the .aab file path
-          AAB_FILE_PATH="app/build/outputs/bundle/release/app-release.aab"
-          
-          # Construct the download link (replace with your actual hosting link)
-          DOWNLOAD_LINK="https://your-download-link.com/$AAB_FILE_PATH"
-          
-          # Prepare the Slack message
-          SLACK_MESSAGE="Build Success! :white_check_mark:
-          Version: $VERSION_NAME (Code: $VERSION_CODE)
-          Download the AAB here: $DOWNLOAD_LINK
-          
-          Changelog:
-          \`\`\`
-          $CHANGELOG_CONTENT
-          \`\`\`"
-          
-          # If SLACK_WEBHOOK_URL is not set, exit the script
-          if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "Error: SLACK_WEBHOOK_URL is not set!"
-            exit 1
-          fi
-          
-          # Send the message to Slack
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text": "'"$SLACK_MESSAGE"'"}' \
-          $SLACK_WEBHOOK_URL
-          
-          if [ $? -ne 0 ]; then
-            echo "Error: Slack notification failed!"
-            exit 2
-          fi
-          echo "Slack message sent successfully!"
 
-    artifacts:
-      - app/build/outputs/**/*.aab
+          echo "✅ Version Code: $VERSION_CODE"
+          echo "✅ Version Name: $VERSION_NAME"
