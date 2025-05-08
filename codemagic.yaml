@@ -128,7 +128,7 @@ workflows:
           # Send Slack message via curl
           curl -X POST -H 'Content-type: application/json' \
           --data '{"text": "Build Success! :white_check_mark:"}' \
-          $SLACK_WEBHOOK_URL
+          https://hooks.slack.com/services/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
 
           if [ $? -ne 0 ]; then
             echo "Error: Slack notification failed!"
