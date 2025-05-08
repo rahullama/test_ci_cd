@@ -1,12 +1,15 @@
 workflows:
-  build-aab:
-    name: Build AAB
+  build-and-upload-aab:
+    name: Build & Upload AAB
     max_build_duration: 60
     instance_type: mac_mini_m2
 
     environment:
       android_signing:
-        - keystore_reference  # Ensure this matches your Codemagic keystore ID
+        - my-uploaded-keystore  # Replace with your keystore ID
+      groups:
+        - google_play            # Enables Play Store access
+        - slack_credentials      # For Slack Webhook
 
     scripts:
       - name: Set Android SDK location
@@ -24,3 +27,16 @@ workflows:
 
     artifacts:
       - app/build/outputs/**/*.aab
+
+    publishing:
+#      google_play:
+#        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+#        track: internal
+#        submit_as_draft: false
+
+      slack:
+        webhook_url: $SLACK_WEBHOOK_URL
+        notify_on_build_start: false
+        notify:
+          success: true
+          failure: true
