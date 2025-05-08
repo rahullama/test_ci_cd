@@ -121,17 +121,17 @@ workflows:
           echo "Sending Slack message..."
           echo "SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL"  # Debug line to check the URL
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "Error: SLACK_WEBHOOK_URL is not set!"
+            echo "Error: $SLACK_WEBHOOK_URL is not set!"
             exit 1
           fi
 
           # Send Slack message via curl
           curl -X POST -H 'Content-type: application/json' \
           --data '{"text": "Build Success! :white_check_mark:"}' \
-          https://hooks.slack.com/services/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
+          $SLACK_WEBHOOK_URL
 
           if [ $? -ne 0 ]; then
-            echo "Error: Slack notification failed!"
+            echo "Error: Slack notification failed! $SLACK_WEBHOOK_URL"
             exit 2
           fi
           echo "Slack message sent successfully!"
