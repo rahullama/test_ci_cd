@@ -66,6 +66,8 @@ workflows:
 
       - name: Read Changelog from `CHANGELOG.md` and Send to Slack
         script: |
+          cd $CM_BUILD_DIR
+          
           # Read the contents of the CHANGELOG.md file
           if [ -f "CHANGELOG.md" ]; then
             CHANGELOG_CONTENT=$(cat CHANGELOG.md)
@@ -73,9 +75,15 @@ workflows:
             CHANGELOG_CONTENT="No changelog found. Please add the latest changes to CHANGELOG.md."
           fi
           
-          # Fetch version and build information (with debugging)
-          VERSION_CODE=$(grep -m 1 "versionCode" app/build.gradle | awk '{print $2}' | tr -d ';')
-          VERSION_NAME=$(grep -m 1 "versionName" app/build.gradle | awk '{print $2}' | tr -d '"')
+          # Extract versionCode and versionName
+          if [ -f "app/build.gradle" ]; then
+            VERSION_CODE=$(grep -m 1 "versionCode" app/build.gradle | awk '{print $2}' | tr -d ';')
+            VERSION_NAME=$(grep -m 1 "versionName" app/build.gradle | awk '{print $2}' | tr -d '"')
+          fi
+
+          # Fallback if values weren't found
+          if [ -z "$VERSION_CODE" ]; then VERSION_CODE="N/A"; fi
+          if [ -z "$VERSION_NAME" ]; then VERSION_NAME="N/A"; fi
           
           echo "Version Code: $VERSION_CODE"
           echo "Version Name: $VERSION_NAME"
