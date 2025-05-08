@@ -6,10 +6,10 @@ workflows:
 
     environment:
       android_signing:
-        - my-uploaded-keystore  # Replace with your keystore ID
-      groups:
-        - google_play            # Enables Play Store access
-        - slack_credentials      # For Slack Webhook
+        - keystore_reference  # Replace with your keystore ID
+#      groups:
+#        - google_play            # Enables Play Store access
+#        - slack_credentials      # For Slack Webhook
 
     scripts:
       - name: Set Android SDK location
