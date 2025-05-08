@@ -1,12 +1,12 @@
 workflows:
-  build-apk:
-    name: Build APK
+  build-aab:
+    name: Build AAB
     max_build_duration: 60
     instance_type: mac_mini_m2
 
     environment:
       android_signing:
-        - keystore_reference  # Make sure this matches the keystore ID in Codemagic
+        - keystore_reference  # Ensure this matches your Codemagic keystore ID
 
     scripts:
       - name: Set Android SDK location
@@ -18,9 +18,9 @@ workflows:
           echo "Keystore Path: $CM_KEYSTORE_PATH"
           echo "Alias: $CM_KEY_ALIAS"
 
-      - name: Build signed release APK
+      - name: Build signed release AAB
         script: |
-          ./gradlew assembleRelease
+          ./gradlew bundleRelease
 
     artifacts:
-      - app/build/outputs/**/*.apk
+      - app/build/outputs/**/*.aab
