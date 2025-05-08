@@ -1,100 +1,48 @@
-##workflows:
-##  build-and-upload-aab:
-##    name: Build & Upload AAB
-##    max_build_duration: 60
-##    instance_type: mac_mini_m2
-##
-##    environment:
-##      android_signing:
-##        - keystore_reference  # Replace with your keystore ID
-###      groups:
-###        - google_play            # Enables Play Store access
-###        - slack_credentials      # For Slack Webhook
-##
-##    scripts:
-##      - name: Set Android SDK location
-##        script: |
-##          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-##
-##      - name: Debug signing environment
-##        script: |
-##          echo "Keystore Path: $CM_KEYSTORE_PATH"
-##          echo "Alias: $CM_KEY_ALIAS"
-##
-##      - name: Build signed release AAB
-##        script: |
-##          ./gradlew bundleRelease
-##
-##    artifacts:
-##      - app/build/outputs/**/*.aab
-##
-##    publishing:
-###      google_play:
-###        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-###        track: internal
-###        submit_as_draft: false
-##
-##      slack:
-##        channel: '#codemagic'                 # ← required
-##        notify_on_build_start: false     # optional
-##        notify:
-##          success: true
-##          failure: true
-##workflows:
-##  build-and-upload-aab:
-##    name: Build & Upload AAB
-##    max_build_duration: 60
-##    instance_type: mac_mini_m2
-##
-##    environment:
-##      android_signing:
-##        - keystore_reference  # Replace with your keystore ID
-##
-##    scripts:
-##      - name: Set Android SDK location
-##        script: |
-##          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-##
-##      - name: Debug signing environment
-##        script: |
-##          echo "Keystore Path: $CM_KEYSTORE_PATH"
-##          echo "Alias: $CM_KEY_ALIAS"
-##
-##      - name: Build signed release AAB
-##        script: |
-##          ./gradlew bundleRelease
-##
-##      - name: Send Basic Slack Message (Only on Success)
-##        script: |
-##          echo "Sending Slack message..."
-##
-##          # Ensure SLACK_WEBHOOK_URL is set
-##          if [ -z "$SLACK_WEBHOOK_URL" ]; then
-##            echo "Error: SLACK_WEBHOOK_URL is not set!"
-##            exit 1
-##          fi
-##
-##          # Send Slack message via curl
-##          curl -X POST -H 'Content-type: application/json' \
-##          --data '{"text": "Build Success! :white_check_mark:"}' \
-##          $SLACK_WEBHOOK_URL
-##
-##          if [ $? -ne 0 ]; then
-##            echo "Error: Slack notification failed!"
-##            exit 2
-##          fi
-##          echo "Slack message sent successfully!"
-##
-##    artifacts:
-##      - app/build/outputs/**/*.aab
-##
-##    publishing:
-##      slack:
-##        channel: '#codemagic'  # Replace with your Slack channel
-##        notify_on_build_start: false
-##        notify:
-##          success: true  # Only send notifications on success
-##          failure: true # Do not notify on failure
+#workflows:
+#  build-and-upload-aab:
+#    name: Build & Upload AAB
+#    max_build_duration: 60
+#    instance_type: mac_mini_m2
+#
+#    environment:
+#      android_signing:
+#        - keystore_reference  # Replace with your keystore ID
+#      groups:
+#        - test
+##      vars:
+##        SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL  # This is where the environment variable will be accessed
+#
+#    scripts:
+#      - name: Set Android SDK location
+#        script: |
+#          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+#
+#      - name: Build signed release AAB
+#        script: |
+#          ./gradlew bundleRelease
+#
+#      - name: Send Slack Message (On Success)
+#        script: |
+#          echo "Sending Slack message..."
+#          echo "SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL"  # Debug line to check the URL
+#          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+#            echo "Error: $SLACK_WEBHOOK_URL is not set!"
+#            exit 1
+#          fi
+#
+#          # Send Slack message via curl
+#          curl -X POST -H 'Content-type: application/json' \
+#          --data '{"text": "Build Success! :white_check_mark:"}' \
+#          $SLACK_WEBHOOK_URL
+#
+#          if [ $? -ne 0 ]; then
+#            echo "Error: Slack notification failed! $SLACK_WEBHOOK_URL"
+#            exit 2
+#          fi
+#          echo "Slack message sent successfully!"
+#
+#    artifacts:
+#      - app/build/outputs/**/*.aab
 workflows:
   build-and-upload-aab:
     name: Build & Upload AAB
@@ -106,8 +54,6 @@ workflows:
         - keystore_reference  # Replace with your keystore ID
       groups:
         - test
-#      vars:
-#        SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL  # This is where the environment variable will be accessed
 
     scripts:
       - name: Set Android SDK location
@@ -121,19 +67,35 @@ workflows:
       - name: Send Slack Message (On Success)
         script: |
           echo "Sending Slack message..."
-          echo "SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL"  # Debug line to check the URL
+
+          # Fetch the version info from the build.gradle
+          VERSION_CODE=$(grep versionCode app/build.gradle | awk '{print $2}' | tr -d ';')
+          VERSION_NAME=$(grep versionName app/build.gradle | awk '{print $2}' | tr -d '"')
+          
+          # Fetch the .aab file path (replace with your actual path if different)
+          AAB_FILE_PATH="app/build/outputs/bundle/release/app-release.aab"
+          
+          # Construct the download link (example, replace with your actual hosting link)
+          DOWNLOAD_LINK="https://your-download-link.com/$AAB_FILE_PATH"
+
+          # If SLACK_WEBHOOK_URL is not set, exit the script
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "Error: $SLACK_WEBHOOK_URL is not set!"
+            echo "Error: SLACK_WEBHOOK_URL is not set!"
             exit 1
           fi
 
-          # Send Slack message via curl
+          # Prepare the Slack message with the version and download link
+          SLACK_MESSAGE="Build Success! :white_check_mark:
+          Version: $VERSION_NAME (Code: $VERSION_CODE)
+          Download the AAB here: $DOWNLOAD_LINK"
+
+          # Send the message to Slack
           curl -X POST -H 'Content-type: application/json' \
-          --data '{"text": "Build Success! :white_check_mark:"}' \
+          --data '{"text": "'"$SLACK_MESSAGE"'"}' \
           $SLACK_WEBHOOK_URL
 
           if [ $? -ne 0 ]; then
-            echo "Error: Slack notification failed! $SLACK_WEBHOOK_URL"
+            echo "Error: Slack notification failed!"
             exit 2
           fi
           echo "Slack message sent successfully!"
