@@ -8,26 +8,5 @@ workflows:
       - name: Extract and print version info
         script: |
           cd $CM_BUILD_DIR
-
-          BUILD_FILE="android/app/build.gradle"
-
-          if [ -f "$BUILD_FILE" ]; then
-            VERSION_CODE=$(grep -m 1 "versionCode" "$BUILD_FILE" | sed -E 's/[^0-9]*([0-9]+).*/\1/')
-            VERSION_NAME=$(grep -m 1 "versionName" "$BUILD_FILE" | sed -E 's/.*"([^"]+)".*/\1/')
-          else
-            echo "Error: $BUILD_FILE not found!"
-            exit 1
-          fi
-
-          if [ -z "$VERSION_CODE" ]; then
-            echo "Error: versionCode not found!"
-            exit 1
-          fi
-
-          if [ -z "$VERSION_NAME" ]; then
-            echo "Error: versionName not found!"
-            exit 1
-          fi
-
-          echo "✅ Version Code: $VERSION_CODE"
-          echo "✅ Version Name: $VERSION_NAME"
+          echo "📁 Listing project structure:"
+          find . -type f -name "build.gradle" || echo "No build.gradle files found."
