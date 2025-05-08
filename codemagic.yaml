@@ -119,6 +119,7 @@ workflows:
       - name: Send Slack Message (On Success)
         script: |
           echo "Sending Slack message..."
+          echo "SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL"  # Debug line to check the URL
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
             echo "Error: SLACK_WEBHOOK_URL is not set!"
             exit 1
